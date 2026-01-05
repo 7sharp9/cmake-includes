@@ -14,9 +14,9 @@ foreach(file ${SourceFiles})
     endif()
 endforeach()
 
-# Apply source_group only to files under ${CMAKE_CURRENT_SOURCE_DIR}/src
+# Apply source_group only to files under ${CMAKE_CURRENT_SOURCE_DIR}/src or source
 if(SourceFilesInTree)
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "" FILES ${SourceFilesInTree})
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${SourceFilesInTree})
 endif()
 
 # Optionally, create a separate group for files outside the source directory
