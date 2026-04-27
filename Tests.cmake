@@ -13,6 +13,15 @@ set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
 # "GLOBS ARE BAD" is brittle and silly dev UX, sorry CMake!
 file(GLOB_RECURSE TestFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h")
 
+# Exclude Catch2-based ownhammer_core test files from the top-level Tests target
+file(GLOB_RECURSE OwnHammerDSPTestFiles
+    "${CMAKE_CURRENT_SOURCE_DIR}/modules/ownhammer_core/tests/dsp/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/modules/ownhammer_core/tests/dsp/*.h"
+)
+
+# Remove these files from TestFiles so only ownhammer_core_tests builds them
+list(REMOVE_ITEM TestFiles ${OwnHammerDSPTestFiles})
+
 # Organize the test source in the Tests/ folder in Xcode
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/tests PREFIX "" FILES ${TestFiles})
 
@@ -28,7 +37,7 @@ endif ()
 CPMAddPackage("gh:catchorg/Catch2@3.11.0")
 
 # Setup the test executable, again C++20 please
-add_executable(Tests ${TestFiles})
+add_executable(Tests ${TestFiles} ${OwnHammerDSPTestFiles})
 target_compile_features(Tests PRIVATE cxx_std_23)
 
 # Our test executable also wants to know about our plugin code...
