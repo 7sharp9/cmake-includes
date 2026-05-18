@@ -18,7 +18,6 @@ file(GLOB_RECURSE TestFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests
 # extraction tests added between configures still make it into the binary.
 file(GLOB_RECURSE OwnHammerDSPTestFiles CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/ownhammer_core/tests/dsp/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/modules/ownhammer_core/tests/dsp/*.h"
 )
 
 # Quarantine list — tests that have rotted against the current API and are
@@ -42,19 +41,25 @@ endif ()
 # Use Catch2 v3 on the devel branch
 CPMAddPackage("gh:catchorg/Catch2@3.11.0")
 
-# Setup the test executable, again C++20 please
-add_executable(Tests ${TestFiles} ${OwnHammerDSPTestFiles})
-target_compile_features(Tests PRIVATE cxx_std_23)
+# Build wrapper translation units outside the JUCE module tree so only the
+# Tests target compiles ownhammer_core's Catch2 test sources.
+set(OwnHammerDSPTestWrappers)
+foreach(testFile IN LISTS OwnHammerDSPTestFiles)
+    file(TO_CMAKE_PATH "${testFile}" testFileCMakePath)
+    file(RELATIVE_PATH testRelPath
+        "${CMAKE_CURRENT_SOURCE_DIR}/modules/ownhammer_core/tests/dsp"
+        "${testFileCMakePath}")
+    string(REPLACE "/" "_" testRelPathSanitized "${testRelPath}")
+    string(REPLACE ".cpp" "" testRelPathStem "${testRelPathSanitized}")
+    set(wrapperFile
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/ownhammer_core_tests/${testRelPathStem}_wrapper.cpp")
+    file(GENERATE OUTPUT "${wrapperFile}" CONTENT "#include \"${testFileCMakePath}\"\n")
+    list(APPEND OwnHammerDSPTestWrappers "${wrapperFile}")
+endforeach()
 
-# JUCE's module scanner marks every .cpp file under a JUCE module tree as
-# HEADER_FILE_ONLY (see JUCEModuleSupport.cmake), which silently excludes the
-# Catch2-based extraction/wireup tests in modules/ownhammer_core/tests/dsp/.
-# Re-enable them as actual C++ TUs so they compile into the Tests binary.
-if(OwnHammerDSPTestFiles)
-    set_source_files_properties(${OwnHammerDSPTestFiles} PROPERTIES
-        HEADER_FILE_ONLY FALSE
-        LANGUAGE CXX)
-endif()
+# Setup the test executable, again C++20 please
+add_executable(Tests ${TestFiles} ${OwnHammerDSPTestWrappers})
+target_compile_features(Tests PRIVATE cxx_std_23)
 
 # Our test executable also wants to know about our plugin code...
 target_include_directories(Tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source ${CMAKE_CURRENT_SOURCE_DIR}/src)
