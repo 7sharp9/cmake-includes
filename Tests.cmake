@@ -57,8 +57,10 @@ foreach(testFile IN LISTS OwnHammerDSPTestFiles)
     list(APPEND OwnHammerDSPTestWrappers "${wrapperFile}")
 endforeach()
 
-# Setup the test executable, again C++20 please
-add_executable(Tests ${TestFiles} ${OwnHammerDSPTestWrappers})
+# Setup the test executable, again C++20 please.
+# EXCLUDE_FROM_ALL: a plain `cmake --build` builds the plugin only; build the
+# tests with `--target Tests`.
+add_executable(Tests EXCLUDE_FROM_ALL ${TestFiles} ${OwnHammerDSPTestWrappers})
 target_compile_features(Tests PRIVATE cxx_std_23)
 
 # Our test executable also wants to know about our plugin code...
