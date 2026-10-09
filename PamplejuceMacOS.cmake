@@ -6,7 +6,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Support macOS down to High
 
 # Building universal binaries on macOS increases build time
 # This is set on CI but not during local dev
-if ((DEFINED ENV{CI} OR DEFINED FORCE_UNIVERSAL_BINARY) AND NOT (CMAKE_SYSTEM_NAME STREQUAL "iOS"))
+if ((DEFINED ENV{CI} OR FORCE_UNIVERSAL_BINARY) AND NOT (CMAKE_SYSTEM_NAME STREQUAL "iOS"))
     # For multi-config generators, set architectures for Release config
     if(CMAKE_CONFIGURATION_TYPES)
         set(CMAKE_OSX_ARCHITECTURES_RELEASE "arm64;x86_64" CACHE STRING "Architecture for Release builds" FORCE)
