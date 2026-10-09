@@ -1,11 +1,12 @@
-file(GLOB_RECURSE BenchmarkFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/Catch2Main.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/*.h")
+file(GLOB_RECURSE BenchmarkFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/*.h")
 
 # Organize the test source in the Tests/ folder in the IDE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks PREFIX "" FILES ${BenchmarkFiles})
 
-add_executable(Benchmarks ${BenchmarkFiles})
+# EXCLUDE_FROM_ALL: build with `--target Benchmarks`, not as part of a plain build.
+add_executable(Benchmarks EXCLUDE_FROM_ALL ${BenchmarkFiles})
 target_compile_features(Benchmarks PRIVATE cxx_std_23)
-# Note: catch_discover_tests disabled for benchmarks - run manually with ./build/Benchmarks_artefacts/Benchmarks
+# Note: catch_discover_tests disabled for benchmarks - run manually with ./build/Benchmarks
 # catch_discover_tests(Benchmarks)
 
 # Our benchmark executable also wants to know about our plugin code...
