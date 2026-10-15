@@ -38,7 +38,7 @@ if (DEFINED ENV{CLION_IDE})
     set(CATCH_CONFIG_CONSOLE_WIDTH 200 CACHE STRING "CLion Workaround" FORCE)
 endif ()
 
-# Use Catch2 v3 on the devel branch
+# Catch2 v3, pinned
 CPMAddPackage("gh:catchorg/Catch2@3.11.0")
 
 # Build wrapper translation units outside the JUCE module tree so only the
@@ -57,7 +57,7 @@ foreach(testFile IN LISTS OwnHammerDSPTestFiles)
     list(APPEND OwnHammerDSPTestWrappers "${wrapperFile}")
 endforeach()
 
-# Setup the test executable, again C++20 please.
+# Setup the test executable (C++23).
 # EXCLUDE_FROM_ALL: a plain `cmake --build` builds the plugin only; build the
 # tests with `--target Tests`.
 add_executable(Tests EXCLUDE_FROM_ALL ${TestFiles} ${OwnHammerDSPTestWrappers})

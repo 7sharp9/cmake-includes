@@ -1,5 +1,18 @@
 # CMake Includes for Pamplejuce
 
+## Fork notes
+
+This is `7sharp9/cmake-includes`, a fork of Pamplejuce's CMake includes used by the OwnHammer plugins. It differs from upstream in these ways:
+
+- C++23 for `SharedCode`, `Tests` and `Benchmarks` (`cxx_std_23`).
+- `Tests.cmake` also globs `modules/ownhammer_core/tests/dsp/*.cpp` with `CONFIGURE_DEPENDS` and compiles each file through a generated wrapper translation unit under the build directory, so JUCE's module scanner does not treat the `.cpp` files inside the module as part of the module. Rotted tests are excluded by a `list(FILTER ... EXCLUDE REGEX ...)` quarantine line (currently `IRCacheTests.cpp`).
+- Catch2 is pinned to 3.11.0 through CPM (`Tests.cmake`); `catch_discover_tests` is disabled for both executables because logger output corrupts test discovery. Run `./Tests` directly.
+- `Tests` and `Benchmarks` are `EXCLUDE_FROM_ALL`: build them with `--target Tests` / `--target Benchmarks`.
+- macOS universal binaries are built only on CI or with `FORCE_UNIVERSAL_BINARY=ON` (`PamplejuceMacOS.cmake`).
+- Test and benchmark include paths accept either `source/` or `src/`.
+
+The rest of this README is upstream's.
+
 Hi there!
 
 ## What is this?
