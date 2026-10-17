@@ -6,6 +6,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks PREFIX "" FILES ${Bench
 # EXCLUDE_FROM_ALL: build with `--target Benchmarks`, not as part of a plain build.
 add_executable(Benchmarks EXCLUDE_FROM_ALL ${BenchmarkFiles})
 target_compile_features(Benchmarks PRIVATE cxx_std_23)
+# No LTO (oh_no_lto is defined in Tests.cmake; the reason is there).
+set_target_properties(Benchmarks PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
 # Note: catch_discover_tests disabled for benchmarks - run manually with ./build/Benchmarks
 # catch_discover_tests(Benchmarks)
 
@@ -20,7 +22,7 @@ endif()
 target_compile_definitions(Benchmarks PRIVATE $<TARGET_PROPERTY:${PROJECT_NAME},COMPILE_DEFINITIONS>)
 
 # And give tests access to our shared code
-target_link_libraries(Benchmarks PRIVATE SharedCode Catch2::Catch2)
+target_link_libraries(Benchmarks PRIVATE SharedCode Catch2::Catch2 oh_no_lto)
 
 # Make an Xcode Scheme for the test executable so we can run tests in the IDE
 set_target_properties(Benchmarks PROPERTIES XCODE_GENERATE_SCHEME ON)

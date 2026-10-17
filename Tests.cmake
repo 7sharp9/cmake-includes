@@ -62,6 +62,20 @@ endforeach()
 # tests with `--target Tests`.
 add_executable(Tests EXCLUDE_FROM_ALL ${TestFiles} ${OwnHammerDSPTestWrappers})
 target_compile_features(Tests PRIVATE cxx_std_23)
+set_target_properties(Tests PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+
+# No LTO for Tests and Benchmarks: a full-LTO link of Tests takes minutes, and
+# only the plugin binaries need it. INTERPROCEDURAL_OPTIMIZATION OFF does not
+# remove the explicit -flto that SharedCode (juce_recommended_lto_flags) and
+# CompilerFlags.cmake add, so oh_no_lto appends -fno-lto after them: it is
+# linked last, and the last LTO flag on the line wins. Benchmarks.cmake reuses
+# it (Benchmarks is included after Tests). MSVC keeps /GL (Windows test builds
+# use the VS presets and are not part of the edit loop).
+add_library(oh_no_lto INTERFACE)
+if(NOT MSVC)
+    target_compile_options(oh_no_lto INTERFACE -fno-lto)
+    target_link_libraries(oh_no_lto INTERFACE -fno-lto)
+endif()
 
 # Our test executable also wants to know about our plugin code...
 target_include_directories(Tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -70,7 +84,7 @@ target_include_directories(Tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source ${CM
 target_compile_definitions(Tests PRIVATE $<TARGET_PROPERTY:${PROJECT_NAME},COMPILE_DEFINITIONS>)
 
 # And give tests access to our shared code
-target_link_libraries(Tests PRIVATE SharedCode Catch2::Catch2)
+target_link_libraries(Tests PRIVATE SharedCode Catch2::Catch2 oh_no_lto)
 
 # Make an Xcode Scheme for the test executable so we can run tests in the IDE
 set_target_properties(Tests PROPERTIES XCODE_GENERATE_SCHEME ON)
@@ -96,3 +110,7 @@ include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 # NOTE: catch_discover_tests disabled - logger output corrupts JSON during discovery
 # Tests still work fine when run directly: ./build/Tests
 # catch_discover_tests(Tests ${DISCOVERY_MODE} "PRE_TEST")
+
+# One ctest entry for the whole binary, so `ctest` and the `dev` workflow preset
+# have something to run. Filter by tag by running ./Tests directly.
+add_test(NAME Tests COMMAND Tests)
