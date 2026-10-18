@@ -20,10 +20,6 @@ file(GLOB_RECURSE OwnHammerDSPTestFiles CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/ownhammer_core/tests/dsp/*.cpp"
 )
 
-# Quarantine list — tests that have rotted against the current API and are
-# tracked separately. Re-enable them as their owners port to the new API.
-list(FILTER OwnHammerDSPTestFiles EXCLUDE REGEX "/tests/dsp/processors/IRCacheTests\\.cpp$")
-
 # Remove these files from TestFiles so only ownhammer_core_tests builds them
 list(REMOVE_ITEM TestFiles ${OwnHammerDSPTestFiles})
 
