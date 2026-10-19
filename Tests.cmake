@@ -110,3 +110,11 @@ include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 # One ctest entry for the whole binary, so `ctest` and the `dev` workflow preset
 # have something to run. Filter by tag by running ./Tests directly.
 add_test(NAME Tests COMMAND Tests)
+
+# The license, IR decryption and blob-extraction cases again, under the ctest label
+# `Security`, for the `security` test preset and `security-check` workflow. The
+# `debug` test preset excludes this label, because `Tests` already runs these cases.
+# [license] is the parent's tag (license observer, IRManagerModular decrypt/cache);
+# [IRExtraction] is ownhammer_core's blob parser bounds checks.
+add_test(NAME SecurityTests COMMAND Tests "[license],[IRExtraction]")
+set_tests_properties(SecurityTests PROPERTIES LABELS Security)
