@@ -65,10 +65,18 @@ set_target_properties(Tests PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
 # remove the explicit -flto that SharedCode (juce_recommended_lto_flags) and
 # CompilerFlags.cmake add, so oh_no_lto appends -fno-lto after them: it is
 # linked last, and the last LTO flag on the line wins. Benchmarks.cmake reuses
-# it (Benchmarks is included after Tests). MSVC keeps /GL (Windows test builds
-# use the VS presets and are not part of the edit loop).
+# it (Benchmarks is included after Tests).
+# MSVC: SharedCode is an INTERFACE library, so Tests compiles its own copies of
+# the plugin sources; /GL- (after the global /GL) makes them native objects and
+# leaves the plugin's objects untouched. The static libraries Tests links (hwy,
+# Catch2, Assets, dsp_core, ...) are still /GL, so the link still needs LTCG;
+# /LTCG:INCREMENTAL reuses Tests.iobj and regenerates only what changed. The
+# first link after a configure or a library change is a full one.
 add_library(oh_no_lto INTERFACE)
-if(NOT MSVC)
+if(MSVC)
+    target_compile_options(oh_no_lto INTERFACE $<$<CONFIG:Release>:/GL->)
+    target_link_options(oh_no_lto INTERFACE $<$<CONFIG:Release>:/LTCG:INCREMENTAL>)
+else()
     target_compile_options(oh_no_lto INTERFACE -fno-lto)
     target_link_libraries(oh_no_lto INTERFACE -fno-lto)
 endif()
